@@ -3,10 +3,10 @@ const app = express()   //Créé l'appli, méthode de express
 const mongoose = require('mongoose')
 
 
-main().catch(err => console.log(err));
+main().catch(err => console.log(err))
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/test');
+  await mongoose.connect('mongodb://127.0.0.1:27017/test')
 }
 
 app.use(express.json()) //Pour utiliser que du json
