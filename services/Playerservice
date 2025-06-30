@@ -1,0 +1,10 @@
+const Player = require('../schema/player')
+
+exports.getAllPlayers = async () => {
+    return await Player.find()
+}
+
+exports.createPlayer = async (playerData) => {
+    const player = new Player(playerData)
+    return await player.save()
+}
