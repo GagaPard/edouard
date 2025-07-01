@@ -8,19 +8,7 @@ var users = []
 
 async function main() {
     await mongoose.connect('mongodb://127.0.0.1:27017/test')
-    await createPlayer({username: "Louis", score : 300})
-    await createPlayers([{username : "Pablo"}, {username : "La petite soeur de Pablo"}, {username: "Edouard dans la piscine creusée", score: 100}])
-    await modifyPlayer(users[0]?._id, {username: "Ryad"})
-    await getPlayer(users[0]?._id)
-    await getPlayersByFilter({score: 0})
-    await getPlayersByIds([users[0]?._id, users[1]?._id])
-    await modifyPlayersByIds([users[1]?._id, users[2]?._id], {score: 100 })
-    await modifyPlayer(users[1]?._id, {score: 0})
-    await modifyPlayersByFilter({score: 0 }, {score: 100 })
-    await getPlayersByFilter({score: 100})
-    await deletePlayersByIds([users[1]?._id, users[2]?._id])
-    await deletePlayersByFilter({score : 100})
-    await deletePlayer(users[0]?._id)
+    await createPlayers([{username : "Pablo", score : 1}, {username : "La petite soeur de Pablo", score: 130}, {username: "Edouard dans la piscine creusée", score: 100}])
 }
 
 async function createPlayer(body) {

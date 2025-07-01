@@ -12,6 +12,11 @@ async function main() {
 app.use(express.json()) //Pour utiliser que du json
 
 
+// Importer nos controllers
+const PlayerController = require('./controllers/PlayerController')
+const PlayerSchema = require('./schemas/Player')
+const Player = mongoose.model('Player', PlayerSchema)
+
 const players = [
     {name : 'Edouard', score : 10}
 ]
@@ -21,6 +26,77 @@ let schemas = {
     score : "Number"
 }
 
+app.get('/players/score-above/:score', async (req, res) => {
+    const minScore = parseInt(req.params.score)     //parseInt transforme les strings en number
+
+    if (isNaN(minScore)) {
+        return res.status(400).json({ message: "ERROR : le score n'est pas un nombre." }) //Si c'est pas un nombre, ça fait une erreur
+    }
+
+    try {
+        const players = await Player.find({score : {$gte : minScore }})     //gte = Greater Than or Equal, va sortir tous les scores supérieurs à celui rentré
+        res.json({players})
+    }
+    catch(err) {
+         res.status(500).json({ message: 'Erreur serveur', error: err?.message })
+    }
+})
+
+app.get('/players/score-below/:score', async (req, res) => {
+    const maxScore = parseInt(req.params.score)
+
+    if (isNaN(maxScore)) {
+        return res.status(400).json({ message: "ERROR : le score n'est pas un nombre." })
+    }
+
+    try {
+        const players = await Player.find({score : {$lte : maxScore }})     //lte = Lower Than or Equal, va sortir tous les scores inférieurs à celui rentré
+        res.json({players})
+    }
+    catch(err) {
+         res.status(500).json({ message: 'Erreur serveur', error: err?.message })
+    }
+})
+
+app.get('/players/:username', async (req, res) => {
+    const username = req.params.username
+
+    try {
+        const players = await Player.find({username : {$regex : username, $options : "i" }})
+        //$regex va chercher tous les usernames qui contiennent le params, et l'$options: "i" rend la recherche insensible à la casse (peu importe des majuscules)
+        if (players.length === 0)
+            res.json({message : 'ERROR : Aucun player ne correspond à la recherche.'})
+        res.json({players})
+    }
+    catch(err) {
+         res.status(500).json({ message: 'Erreur serveur', error: err?.message })
+    }
+})
+
+app.get('/players/classement/ascending', async (req, res) => {
+    try {
+        const players = await Player.find().sort({score : 1})      //sort va trier dans l'ordre croissant vu qu'on a mis 1
+        if (players.length === 0)
+            res.json({message : 'ERROR : Aucun joueur trouvé.'})
+        res.json({players})
+    }
+    catch(err) {
+         res.status(500).json({ message: 'Erreur serveur', error: err?.message })
+    }
+})
+
+app.get('/players/classement/descending', async (req, res) => {
+    try {
+        const players = await Player.find().sort({score : -1})      //sort va trier dans l'ordre décroissant vu qu'on a mis -1
+        if (players.length === 0)
+            res.json({message : 'ERROR : Aucun joueur trouvé.'})
+        res.json({players})
+    }
+    catch(err) {
+         res.status(500).json({ message: 'Erreur serveur', error: err?.message })
+    }
+})
+
 app.get('/ping', (req, res) => {    //Crée une route HTTP GET accessible à l’URL /ping
     res.json({reponse: 'pong'})
 })
@@ -29,11 +105,9 @@ app.get('/players', (req, res) => {
     res.json(players)  
 })
 
-app.post('/player', (req, res) => {     //Crée une route HTTP POST accessible à l’URL /player
-    let player_to_add = req.body
-    players.push(player_to_add)
-    res.json(player_to_add)
-})
+app.get('/player/:id', PlayerController.getOnePlayer)
+
+app.post('/player',PlayerController.createPlayer)
 
 app.post('/players', (req, res) => {
     let players_to_add = req.body
@@ -110,7 +184,8 @@ let checkPlayerProfTab = function (tab) {
     //  return {success: false, errors}
 }
 
-app.listen(3000)    //Affecte le port 3000 à notre serveur, on y accède en faisant localhost:3000 sur le navigateur
+app.listen(3000)        //Affecte le port 3000 à notre serveur, on y accède en faisant localhost:3000 sur le navigateur
+console.log("Serveur en ligne sur le port 3000")
 
 let checkPlayerGael = function(player) {
     return (
